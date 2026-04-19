@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+migrate_data.js
+inspect_supabase.js
+supabase_inspect.json

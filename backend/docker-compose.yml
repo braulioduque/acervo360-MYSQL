@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: acervo360-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=acervo360_user
+      - DB_PASS=Bw8gjlinux*
+      - DB_NAME=acervo360_db
+      - JWT_SECRET=supersecretjtwtokenforacervo360
+      - UPLOAD_DIR=uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./uploads:/app/uploads
+
+  db:
+    image: mysql:9.0
+    container_name: acervo360-db
+    restart: always
+    environment:
+      - MYSQL_DATABASE=acervo360_db
+      - MYSQL_USER=acervo360_user
+      - MYSQL_PASSWORD=Bw8gjlinux*
+      - MYSQL_ROOT_PASSWORD=Bw8gjlinux*
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:

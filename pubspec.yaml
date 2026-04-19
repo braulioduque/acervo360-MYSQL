@@ -1,0 +1,44 @@
+name: acervo360
+description: "Sua jornada no tiro esportivo começa aqui."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  supabase_flutter: ^2.0.0
+  file_picker: ^11.0.2
+  image_picker: ^1.1.2
+  http: ^1.2.2
+  uuid: ^4.5.1
+  syncfusion_flutter_pdfviewer: ^33.1.47
+  shared_preferences: ^2.5.4
+  intl: ^0.20.2
+  local_auth: ^3.0.1
+  mask_text_input_formatter: ^2.9.0
+  path: ^1.9.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: "^0.14.4"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icone.png" # Caminho da sua imagem
+  min_sdk_android: 21 # android min sdk min:16
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+
