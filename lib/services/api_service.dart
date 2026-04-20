@@ -5,11 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart' as p;
 
 class ApiService {
-  static String _baseUrlCached = 'http://127.0.0.1:3000';
+  static String _baseUrlCached = 'https://data.inforfile.com.br';
   
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _baseUrlCached = prefs.getString('api_base_url') ?? 'http://127.0.0.1:3000';
+    _baseUrlCached = prefs.getString('api_base_url') ?? 'https://data.inforfile.com.br';
   }
 
   static String get baseUrl => _baseUrlCached;

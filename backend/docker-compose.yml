@@ -9,8 +9,8 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - DB_HOST=db
-      - DB_PORT=3366
+      - DB_HOST=host.docker.internal
+      - DB_PORT=3306
       - DB_USER=acervo360_user
       - DB_PASS=Bw8gjlinux*
       - DB_NAME=acervo360_db
@@ -21,26 +21,26 @@ services:
     volumes:
       - ./uploads:/app/uploads
 
-  db:
-    image: mysql:latest
-    container_name: acervo360-db
-    restart: always
-    environment:
-      - MYSQL_DATABASE=acervo360_db
-      - MYSQL_USER=acervo360_user
-      - MYSQL_PASSWORD=Bw8gjlinux*
-      - MYSQL_ROOT_PASSWORD=bw8gjlinux*
-    ports:
-      - "3366:3366"
-    command: --port=3366
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+#  db:
+#    image: mysql:latest
+#    container_name: acervo360-db
+#    restart: always
+#    environment:
+#      - MYSQL_DATABASE=acervo360_db
+#      - MYSQL_USER=acervo360_user
+#      - MYSQL_PASSWORD=Bw8gjlinux*
+#      - MYSQL_ROOT_PASSWORD=bw8gjlinux*
+#    ports:
+#      - "3366:3366"
+#    command: --port=3366
+#    volumes:
+#      - db_data:/var/lib/mysql
+#      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+#    healthcheck:
+#      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
 
 volumes:
   db_data:
