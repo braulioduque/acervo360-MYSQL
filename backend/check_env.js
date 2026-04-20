@@ -38,7 +38,7 @@ async function testConn() {
       user: process.env.DB_USER || 'acervo360_user',
       password: process.env.DB_PASS || 'Bw8gjlinux*',
       database: process.env.DB_NAME || 'acervo360_db',
-      port: process.env.DB_PORT || 3306
+      port: process.env.DB_PORT || 3366
     });
     console.log('✅ CONEXÃO COM SUCESSO!');
     await conn.end();
