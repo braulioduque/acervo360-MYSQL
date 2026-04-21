@@ -834,12 +834,12 @@ class _ClubsPageState extends State<ClubsPage> {
 
     if (selectedState != null) {
       try {
-        cities = await _citiesByState(selectedState!);
+        cities = await _citiesByState(selectedState);
       } catch (_) {}
     }
 
-    if (selectedCity != null && selectedCity!.isNotEmpty && !cities.contains(selectedCity)) {
-      cities = [...cities, selectedCity!]..sort();
+    if (selectedCity != null && selectedCity.isNotEmpty && !cities.contains(selectedCity)) {
+      cities = [...cities, selectedCity]..sort();
     }
 
     if (!mounted) return;

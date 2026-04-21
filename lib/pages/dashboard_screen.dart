@@ -8,7 +8,6 @@ import 'package:acervo360/pages/subscription_screen.dart';
 import 'package:acervo360/services/subscription_service.dart';
 import 'package:acervo360/theme/app_theme.dart';
 import 'package:acervo360/pages/settings_screen.dart';
-import 'package:acervo360/services/theme_service.dart';
 import 'package:acervo360/services/api_service.dart';
 import 'package:flutter/material.dart';
 

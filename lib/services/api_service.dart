@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path/path.dart' as p;
 
 class ApiService {
   static String _baseUrlCached = 'https://data.inforfile.com.br';

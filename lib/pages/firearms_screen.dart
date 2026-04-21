@@ -8,9 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
-import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as p;
 
 class FirearmAvatarPage extends StatefulWidget {
   const FirearmAvatarPage({
@@ -167,13 +165,11 @@ class _FirearmAvatarPageState extends State<FirearmAvatarPage> {
 
       final uploadedPath = await ApiService.uploadFile(tempFile, 'firearm-avatars');
       
-      if (uploadedPath != null) {
-        await ApiService.post('firearms', {
-          'id': widget.firearmId,
-          'avatar_url': uploadedPath,
-        });
-      }
-
+      await ApiService.post('firearms', {
+        'id': widget.firearmId,
+        'avatar_url': uploadedPath,
+      });
+    
       if (!mounted) return;
       _showMessage('Avatar atualizado.');
       Navigator.pop(context, true);
@@ -464,7 +460,7 @@ class _FirearmsPageState extends State<FirearmsPage> {
     String? avatarUrl,
   }) async {
     final payload = <String, dynamic>{
-      if (id != null) 'id': id,
+      'id': ?id,
       'brand': brand,
       'model': model,
       'caliber': caliber,
@@ -475,7 +471,7 @@ class _FirearmsPageState extends State<FirearmsPage> {
       'registry_type': registryType,
       'craf_number': crafNumber,
       'craf_valid_until': crafValidUntil?.toIso8601String().split('T').first,
-      if (avatarUrl != null) 'avatar_url': avatarUrl,
+      'avatar_url': ?avatarUrl,
     };
 
     final result = await ApiService.post('firearms', payload);
@@ -622,10 +618,8 @@ class _FirearmsPageState extends State<FirearmsPage> {
 
         if (fileToUpload != null) {
           final uploadedPath = await ApiService.uploadFile(fileToUpload, 'crafs');
-          if (uploadedPath != null) {
-            await ApiService.post('firearms', {'id': firearmId, 'craf_url': uploadedPath});
-          }
-        }
+          await ApiService.post('firearms', {'id': firearmId, 'craf_url': uploadedPath});
+                }
       } else if (removeCraf && id != null) {
         // Remove o CRAF se solicitado e for uma edição
         await ApiService.post('firearms', {'id': firearmId, 'craf_url': null});

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
@@ -827,10 +826,8 @@ class GtesPageState extends State<GtesPage> {
                                     }
 
                                     final uploadedPath = await ApiService.uploadFile(tempFile, 'gte-documents');
-                                    if (uploadedPath != null) {
-                                      payload['gte_url'] = uploadedPath;
-                                    }
-                                  } else if (gteRemoved) {
+                                    payload['gte_url'] = uploadedPath;
+                                                                    } else if (gteRemoved) {
                                     payload['gte_url'] = null;
                                   } else if (existing != null) {
                                     payload['gte_url'] = existing['gte_url'];

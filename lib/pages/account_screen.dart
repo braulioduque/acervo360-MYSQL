@@ -213,39 +213,37 @@ class _AccountPageState extends State<AccountPage> {
 
       if (!mounted) return;
 
-      if (data != null) {
-        _nameController.text = (data['full_name'] ?? '').toString();
-        _cpfController.text = (data['cpf'] ?? '').toString();
-        _phoneController.text = (data['phone'] ?? '').toString();
-        _crController.text = (data['cr_number'] ?? '').toString();
-        _crValidUntil = _parseIsoDate(
-          (data['cr_valid_until'] ?? '').toString(),
-        );
-        _crValidityController.text = _crValidUntil == null
-            ? ''
-            : _formatDateBr(_crValidUntil!);
-        _crCategoriesSelected.clear();
-        final categories = data['cr_categories'];
-        if (categories is List) {
-          for (final item in categories) {
-            final value = item?.toString();
-            if (value != null && _crCategories.contains(value)) {
-              _crCategoriesSelected.add(value);
-            }
+      _nameController.text = (data['full_name'] ?? '').toString();
+      _cpfController.text = (data['cpf'] ?? '').toString();
+      _phoneController.text = (data['phone'] ?? '').toString();
+      _crController.text = (data['cr_number'] ?? '').toString();
+      _crValidUntil = _parseIsoDate(
+        (data['cr_valid_until'] ?? '').toString(),
+      );
+      _crValidityController.text = _crValidUntil == null
+          ? ''
+          : _formatDateBr(_crValidUntil!);
+      _crCategoriesSelected.clear();
+      final categories = data['cr_categories'];
+      if (categories is List) {
+        for (final item in categories) {
+          final value = item?.toString();
+          if (value != null && _crCategories.contains(value)) {
+            _crCategoriesSelected.add(value);
           }
         }
-        await _setAvatarValue((data['avatar_url'] ?? '').toString());
-
-        final crUrl = (data['cr_url'] ?? '').toString().trim();
-        if (crUrl.isNotEmpty) {
-          _crSignedUrl = ApiService.getPublicUrl(crUrl);
-        } else {
-          _crSignedUrl = null;
-        }
-
-        await _loadAddresses();
       }
-    } catch (e) {
+      await _setAvatarValue((data['avatar_url'] ?? '').toString());
+
+      final crUrl = (data['cr_url'] ?? '').toString().trim();
+      if (crUrl.isNotEmpty) {
+        _crSignedUrl = ApiService.getPublicUrl(crUrl);
+      } else {
+        _crSignedUrl = null;
+      }
+
+      await _loadAddresses();
+        } catch (e) {
       if (!mounted) return;
       _showMessage('Erro ao carregar perfil: $e');
     } catch (_) {

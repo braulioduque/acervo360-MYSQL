@@ -37,6 +37,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -94,6 +95,11 @@ const validatePassword = (password) => {
   if (!/[^A-Za-z0-9]/.test(password)) return 'A senha deve ter ao menos 1 caractere especial';
   return null;
 };
+
+// --- PAGINAS ESTATICAS ---
+app.get('/privacy-policy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy-policy.html'));
+});
 
 // --- ROTAS DE AUTENTICAÇÃO ---
 
