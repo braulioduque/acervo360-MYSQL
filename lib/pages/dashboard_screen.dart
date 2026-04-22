@@ -24,6 +24,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   final GlobalKey<_HomeTabState> _homeKey = GlobalKey<_HomeTabState>();
   final GlobalKey<GtesPageState> _gtesKey = GlobalKey<GtesPageState>();
+  final GlobalKey<HabitualitiesPageState> _habitKey = GlobalKey<HabitualitiesPageState>();
 
   @override
   void initState() {
@@ -49,6 +50,13 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() => _currentIndex = index);
   }
 
+  void _onAddHabituality() {
+    setState(() => _currentIndex = 4);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _habitKey.currentState?.openForm();
+    });
+  }
+
   void _onAddGte() {
     setState(() => _currentIndex = 3);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -64,11 +72,12 @@ class _DashboardPageState extends State<DashboardPage> {
         key: _homeKey,
         onTabSelected: _onTabTapped,
         onAddGte: _onAddGte,
+        onAddHabituality: _onAddHabituality,
       ),
       const FirearmsPage(),
       const ClubsPage(),
       GtesPage(key: _gtesKey),
-      const HabitualitiesPage(),
+      HabitualitiesPage(key: _habitKey),
       const AccountPage(),
       if (_isAdmin) const AdminPage(),
     ];
@@ -115,10 +124,16 @@ class _DashboardPageState extends State<DashboardPage> {
 // Tab Home
 // ──────────────────────────────────────────────────────────────
 class _HomeTab extends StatefulWidget {
-  const _HomeTab({super.key, required this.onTabSelected, required this.onAddGte});
+  const _HomeTab({
+    super.key,
+    required this.onTabSelected,
+    required this.onAddGte,
+    required this.onAddHabituality,
+  });
 
   final void Function(int) onTabSelected;
   final VoidCallback onAddGte;
+  final VoidCallback onAddHabituality;
 
   @override
   State<_HomeTab> createState() => _HomeTabState();
@@ -200,7 +215,8 @@ class _HomeTabState extends State<_HomeTab> {
         final List<Map<String, dynamic>> newAlerts = [];
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
-        final upcomingLimit = today.add(const Duration(days: 61));
+        // PRAZO ESPECIFICO PARA NOTIFICAR CRAF E CR:
+        final upcomingLimit = today.add(const Duration(days: 90));
 
         final crValidUntilStr = profile?['cr_valid_until']?.toString();
         if (crValidUntilStr != null && crValidUntilStr.isNotEmpty) {
@@ -251,7 +267,10 @@ class _HomeTabState extends State<_HomeTab> {
             final expiry = DateTime.tryParse(expiresAtStr);
             if (expiry != null) {
               final expiryClean = DateTime(expiry.year, expiry.month, expiry.day);
-              if (expiryClean.isBefore(upcomingLimit)) {
+              // Prazo específico para GTE: 45 dias
+              final gteLimit = today.add(const Duration(days: 45));
+              
+              if (expiryClean.isBefore(gteLimit)) {
                 final isExpired = expiryClean.isBefore(today);
                 final diffDays = expiryClean.difference(today).inDays.abs();
                 
@@ -572,7 +591,7 @@ class _HomeTabState extends State<_HomeTab> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: InkWell(
-                    onTap: () => widget.onTabSelected(4),
+                    onTap: widget.onAddHabituality,
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       height: 80,

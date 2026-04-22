@@ -17,10 +17,10 @@ class HabitualitiesPage extends StatefulWidget {
   const HabitualitiesPage({super.key});
 
   @override
-  State<HabitualitiesPage> createState() => _HabitualitiesPageState();
+  State<HabitualitiesPage> createState() => HabitualitiesPageState();
 }
 
-class _HabitualitiesPageState extends State<HabitualitiesPage> {
+class HabitualitiesPageState extends State<HabitualitiesPage> {
   bool _loading = true;
   String _searchQuery = '';
   List<Map<String, dynamic>> _habitualities = [];
@@ -126,7 +126,7 @@ class _HabitualitiesPageState extends State<HabitualitiesPage> {
     }
   }
 
-  void _openForm([Map<String, dynamic>? item]) {
+  void openForm([Map<String, dynamic>? item]) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -165,7 +165,7 @@ class _HabitualitiesPageState extends State<HabitualitiesPage> {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () => _openForm(),
+            onPressed: () => openForm(),
             icon: const Icon(Icons.add_circle_outline),
             color: colors.accent,
           ),
@@ -267,7 +267,7 @@ class _HabitualitiesPageState extends State<HabitualitiesPage> {
         return _HabitualityCard(
           habit: habit,
           onView: () => _viewHabituality(habit),
-          onEdit: () => _openForm(habit),
+          onEdit: () => openForm(habit),
           onDelete: () => _deleteHabituality(habit['id']),
         );
       },
@@ -297,7 +297,7 @@ class _HabitualitiesPageState extends State<HabitualitiesPage> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () => _openForm(),
+            onPressed: () => openForm(),
             icon: const Icon(Icons.add),
             label: const Text('Registrar agora'),
             style: ElevatedButton.styleFrom(
@@ -340,79 +340,99 @@ class _HabitualityCard extends StatelessWidget {
         ? (fBrand != null ? '$fBrand $fModel ${fCaliber != null ? "($fCaliber)" : ""}' : 'Arma própria')
         : '${habit['third_party_brand']} (${habit['third_party_caliber']})';
 
+    final hasAttachment = habit['attachment_url'] != null && habit['attachment_url'].toString().isNotEmpty;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: colors.card,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: colors.cardBorder),
       ),
       child: InkWell(
         onTap: onView,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Linha 1: Tipo e Ações
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: colors.accent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       habit['type'].toUpperCase(),
-                      style: TextStyle(
-                        color: colors.accent,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(color: colors.accent, fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                   ),
                   Row(
                     children: [
                       IconButton(
                         onPressed: onEdit,
-                        icon: Icon(Icons.edit_outlined, size: 20, color: colors.textMuted),
-                        padding: EdgeInsets.zero,
+                        icon: Icon(Icons.edit_outlined, size: 18, color: colors.textMuted),
                         constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.all(4),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       IconButton(
                         onPressed: onDelete,
-                        icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
-                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
                         constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.all(4),
                       ),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                habit['type'] == 'Treino' 
-                    ? habit['modality'] 
-                    : (habit['event_name'] ?? habit['modality']),
-                style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
+              
+              // Linha 2: Modalidade e Data
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Text(
+                      habit['type'] == 'Treino' 
+                          ? habit['modality'] 
+                          : (habit['event_name'] ?? habit['modality']),
+                      style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    formattedDate,
+                    style: TextStyle(color: colors.textMuted, fontSize: 12),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+
+              // Linha 3: Local
+              Row(
+                children: [
+                  Icon(Icons.location_on_outlined, size: 14, color: colors.textMuted),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
                       habit['location_name'] ?? 'Local não informado',
-                      style: TextStyle(color: colors.textMuted, fontSize: 13),
+                      style: TextStyle(color: colors.textSecondary, fontSize: 13),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
+
+              // Linha 4: Arma e Disparos
               Row(
                 children: [
                   Icon(Icons.inventory_2_outlined, size: 14, color: colors.textMuted),
@@ -425,106 +445,61 @@ class _HabitualityCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ],
-              ),
-              const Divider(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colors.cardBorder,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              'EQUIPAMENTO',
-                              style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '• $formattedDate',
-                              style: TextStyle(color: colors.textMuted, fontSize: 10),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
+                        Icon(Icons.ads_click, size: 12, color: colors.textSecondary),
+                        const SizedBox(width: 4),
                         Text(
-                          firearmDesc,
-                          style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          '${habit['shot_count']}',
+                          style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'DISPAROS',
-                        style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${habit['shot_count']}',
-                        style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
                 ],
               ),
-              if (habit['attachment_url'] != null &&
-                  habit['attachment_url'].toString().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 40,
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colors.accent.withOpacity(0.1),
-                        foregroundColor: colors.accent,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        side: BorderSide(color: colors.accent.withOpacity(0.2)),
-                      ),
-                      onPressed: () {
-                        final path = habit['attachment_url'].toString();
-                        final isPdf = path.toLowerCase().endsWith('.pdf');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HabitualityViewerPage(
-                              title: isPdf ? 'Visualizar PDF' : 'Visualizar Foto',
-                              url: ApiService.getPublicUrl(path),
-                              isPdf: isPdf,
-                            ),
-                          ),
-                        );
-                      },
-                      icon: Icon(
-                        habit['attachment_url']
-                                .toString()
-                                .toLowerCase()
-                                .endsWith('.pdf')
-                            ? Icons.picture_as_pdf
-                            : Icons.image,
-                        size: 18,
-                      ),
-                      label: const Text(
-                        'VISUALIZAR COMPROVANTE',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+
+              // Linha 5: Botão de Comprovante (Opcional)
+              if (hasAttachment) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 36,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.accent.withOpacity(0.1),
+                      foregroundColor: colors.accent,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      side: BorderSide(color: colors.accent.withOpacity(0.2)),
+                      padding: EdgeInsets.zero,
                     ),
+                    onPressed: () {
+                      final path = habit['attachment_url'].toString();
+                      final isPdf = path.toLowerCase().endsWith('.pdf');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HabitualityViewerPage(
+                            url: ApiService.getPublicUrl(path),
+                            title: 'Comprovante - ${habit['modality']}',
+                            isPdf: isPdf,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.description_outlined, size: 16),
+                    label: const Text('VISUALIZAR COMPROVANTE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ),
+              ],
             ],
           ),
         ),
