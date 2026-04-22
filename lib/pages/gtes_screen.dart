@@ -1244,8 +1244,8 @@ class GtesPageState extends State<GtesPage> {
                                 ),
                               ),
                             ),
-                          if (gte['profile_addresses'] != null ||
-                              gte['destination_club'] != null)
+                          if (gte['origin_street'] != null ||
+                              gte['destination_club_name'] != null)
                             Padding(
                               padding: const EdgeInsets.only(top: 8),
                               child: Row(
@@ -1262,31 +1262,15 @@ class GtesPageState extends State<GtesPage> {
                                             fontSize: 10,
                                           ),
                                         ),
-                                        Builder(
-                                          builder: (context) {
-                                            final addrId =
-                                                gte['profile_address_id']
-                                                    ?.toString();
-                                            final addrMatches = _addresses
-                                                .where(
-                                                  (a) =>
-                                                      a['id']?.toString() ==
-                                                      addrId,
-                                                );
-                                            final addr = addrMatches.isNotEmpty
-                                                ? addrMatches.first
-                                                : null;
-                                            return Text(
-                                              addr != null
-                                                  ? '${addr['street']}, ${addr['number']}'
-                                                  : 'N/A',
-                                              style: TextStyle(
-                                                color: AppColors.of(context).textPrimary,
-                                                fontSize: 13,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            );
-                                          },
+                                        Text(
+                                          gte['origin_street'] != null
+                                              ? '${gte['origin_street']}, ${gte['origin_number']}'
+                                              : 'N/A',
+                                          style: TextStyle(
+                                            color: AppColors.of(context).textPrimary,
+                                            fontSize: 13,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
@@ -1314,7 +1298,7 @@ class GtesPageState extends State<GtesPage> {
                                           ),
                                         ),
                                         Text(
-                                          gte['destination_club']?['name']
+                                          gte['destination_club_name']
                                                   ?.toString() ??
                                               'N/A',
                                           style: TextStyle(
