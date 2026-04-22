@@ -39,7 +39,7 @@ class AppColors extends ThemeExtension<AppColors> {
     textPrimary: Colors.white,
     textSecondary: Color(0x99FFFFFF), // white60
     textMuted: Color(0x66FFFFFF), // white40
-    accent: Color(0xFF1E56D1),
+    accent: Color(0xFF3B82F6),
     inputFill: Color(0xFF1E293B),
     bottomSheet: Color(0xFF111827),
   );

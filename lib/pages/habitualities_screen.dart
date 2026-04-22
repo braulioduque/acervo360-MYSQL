@@ -45,9 +45,30 @@ class _HabitualitiesPageState extends State<HabitualitiesPage> {
 
       if (mounted) {
         setState(() {
-          _habitualities = (results[0] as List).cast<Map<String, dynamic>>();
+          final rawHabitualities = (results[0] as List).cast<Map<String, dynamic>>();
           _firearms = (results[1] as List).cast<Map<String, dynamic>>();
           _modalities = (results[2] as List).map((e) => e['name'].toString()).toList();
+
+          // Enriquecer as habitualidades com os dados das armas
+          _habitualities = rawHabitualities.map((h) {
+            if (h['equipment_source'] == 'Própria' && h['firearm_id'] != null) {
+              final firearmId = h['firearm_id'].toString();
+              final firearm = _firearms.firstWhere(
+                (f) => f['id'].toString() == firearmId,
+                orElse: () => {},
+              );
+              if (firearm.isNotEmpty) {
+                return {
+                  ...h,
+                  'firearm_brand': firearm['brand'],
+                  'firearm_model': firearm['model'],
+                  'firearm_caliber': firearm['caliber'],
+                };
+              }
+            }
+            return h;
+          }).toList();
+
           _loading = false;
         });
       }
@@ -214,10 +235,9 @@ class _HabitualitiesPageState extends State<HabitualitiesPage> {
       final location = (h['location_name'] ?? '').toString().toLowerCase();
       final event = (h['event_name'] ?? '').toString().toLowerCase();
       
-      final firearm = h['firearms'] as Map<String, dynamic>?;
-      final firearmDesc = firearm != null 
-          ? '${firearm['brand']} ${firearm['model']}'.toLowerCase()
-          : '';
+      final fBrand = h['firearm_brand'] ?? h['firearms']?['brand'] ?? '';
+      final fModel = h['firearm_model'] ?? h['firearms']?['model'] ?? '';
+      final firearmDesc = '$fBrand $fModel'.toLowerCase();
 
       return type.contains(query) ||
           modality.contains(query) ||
@@ -312,9 +332,12 @@ class _HabitualityCard extends StatelessWidget {
     final date = DateTime.parse(habit['date_realization']);
     final formattedDate = DateFormat('dd/MM/yyyy').format(date);
     
-    final firearm = habit['firearms'];
+    final fBrand = habit['firearm_brand'] ?? habit['firearms']?['brand'];
+    final fModel = habit['firearm_model'] ?? habit['firearms']?['model'];
+    final fCaliber = habit['firearm_caliber'] ?? habit['firearms']?['caliber'];
+
     final firearmDesc = habit['equipment_source'] == 'Própria'
-        ? (firearm != null ? '${firearm['brand']} ${firearm['model']}' : 'Arma própria')
+        ? (fBrand != null ? '$fBrand $fModel ${fCaliber != null ? "($fCaliber)" : ""}' : 'Arma própria')
         : '${habit['third_party_brand']} (${habit['third_party_caliber']})';
 
     return Container(
@@ -379,12 +402,25 @@ class _HabitualityCard extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Icon(Icons.location_on_outlined, size: 14, color: colors.textMuted),
-                  const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       habit['location_name'] ?? 'Local não informado',
                       style: TextStyle(color: colors.textMuted, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.inventory_2_outlined, size: 14, color: colors.textMuted),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      firearmDesc,
+                      style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -433,12 +469,62 @@ class _HabitualityCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '${habit['shot_count']}',
-                        style: TextStyle(color: colors.accent, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                 ],
               ),
+              if (habit['attachment_url'] != null &&
+                  habit['attachment_url'].toString().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 40,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: colors.accent.withOpacity(0.1),
+                        foregroundColor: colors.accent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(color: colors.accent.withOpacity(0.2)),
+                      ),
+                      onPressed: () {
+                        final path = habit['attachment_url'].toString();
+                        final isPdf = path.toLowerCase().endsWith('.pdf');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HabitualityViewerPage(
+                              title: isPdf ? 'Visualizar PDF' : 'Visualizar Foto',
+                              url: ApiService.getPublicUrl(path),
+                              isPdf: isPdf,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        habit['attachment_url']
+                                .toString()
+                                .toLowerCase()
+                                .endsWith('.pdf')
+                            ? Icons.picture_as_pdf
+                            : Icons.image,
+                        size: 18,
+                      ),
+                      label: const Text(
+                        'VISUALIZAR COMPROVANTE',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -1334,9 +1420,12 @@ class _HabitualityDetailModal extends StatelessWidget {
     final date = DateTime.parse(habit['date_realization']);
     final formattedDate = DateFormat('dd/MM/yyyy').format(date);
     
-    final firearm = habit['firearms'];
+    final fBrand = habit['firearm_brand'] ?? habit['firearms']?['brand'];
+    final fModel = habit['firearm_model'] ?? habit['firearms']?['model'];
+    final fCaliber = habit['firearm_caliber'] ?? habit['firearms']?['caliber'];
+
     final firearmDesc = habit['equipment_source'] == 'Própria'
-        ? (firearm != null ? '${firearm['brand']} ${firearm['model']}' : 'Arma própria')
+        ? (fBrand != null ? '$fBrand $fModel ${fCaliber != null ? "($fCaliber)" : ""}' : 'Arma própria')
         : '${habit['third_party_brand']} (${habit['third_party_caliber']})';
 
     return Container(

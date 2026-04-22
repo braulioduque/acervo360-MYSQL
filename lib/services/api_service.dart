@@ -131,10 +131,14 @@ class ApiService {
       headers: await _headers(),
       body: jsonEncode(data),
     );
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Erro na requisição POST (${response.statusCode}): ${response.body}');
+    
+    final decoded = jsonDecode(response.body);
+    
+    if (response.statusCode >= 500) {
+      throw Exception('Erro no servidor (${response.statusCode})');
     }
-    return jsonDecode(response.body);
+    
+    return decoded;
   }
 
   static Future<void> delete(String endpoint, String id) async {

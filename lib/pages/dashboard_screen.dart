@@ -136,8 +136,8 @@ class _HomeTabState extends State<_HomeTab> {
   List<Map<String, dynamic>> _alerts = [];
   String? _avatarUrl;
   bool _isTrial = false;
+  bool _isSuperAdmin = false;
   int _daysRemaining = 0;
-  // Realtime removed
 
   @override
   void initState() {
@@ -195,6 +195,7 @@ class _HomeTabState extends State<_HomeTab> {
         _gtesCount = gtes.length;
         _habitualitiesCount = habitualities.length;
         _avatarUrl = avatarSignedUrl;
+        _isSuperAdmin = profile?['is_admin'] == 'S';
 
         final List<Map<String, dynamic>> newAlerts = [];
         final now = DateTime.now();
@@ -381,23 +382,25 @@ class _HomeTabState extends State<_HomeTab> {
                         ),
                 ),
                 const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SettingsPage()),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colors.card,
-                      borderRadius: BorderRadius.circular(12),
+                if (_isSuperAdmin) ...[
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsPage()),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: colors.card,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.settings, color: colors.textPrimary, size: 24),
                     ),
-                    child: Icon(Icons.settings, color: colors.textPrimary, size: 24),
                   ),
-                ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(

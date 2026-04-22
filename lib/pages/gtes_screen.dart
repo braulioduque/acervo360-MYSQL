@@ -1339,8 +1339,7 @@ class GtesPageState extends State<GtesPage> {
                                             ),
                                           ),
                                           onPressed: () {
-                                            final rawUrl = (gte['gte_url'] ?? '').toString();
-                                            final url = rawUrl.startsWith('http') ? rawUrl : '${ApiService.baseUrl}/$rawUrl';
+                                            final url = ApiService.getPublicUrl(gte['gte_url']?.toString());
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
