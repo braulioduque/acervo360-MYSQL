@@ -211,4 +211,12 @@ CREATE TABLE IF NOT EXISTS `app_settings` (
 
 INSERT IGNORE INTO `app_settings` (`id`, `cr_days`, `craf_days`, `gte_days`) VALUES (1, 90, 90, 45);
 
+-- 12. Password Resets
+CREATE TABLE IF NOT EXISTS `password_resets` (
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

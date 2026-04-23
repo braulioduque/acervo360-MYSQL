@@ -1,9 +1,20 @@
 const path = require('path');
-// FORÇA o carregamento do arquivo .env da pasta backend, sobrescrevendo qualquer outro
-require('dotenv').config({ 
-  path: path.join(__dirname, '.env'),
-  override: true 
-});
+const fs = require('fs');
+
+// Tenta localizar o .env em diferentes níveis (importante para Docker)
+const envPaths = [
+  path.join(__dirname, '.env'),
+  path.join(process.cwd(), '.env'),
+  path.join(__dirname, '..', '.env')
+];
+
+for (const p of envPaths) {
+  if (fs.existsSync(p)) {
+    require('dotenv').config({ path: p, override: true });
+    console.log('INFO: Arquivo .env carregado de:', p);
+    break;
+  }
+}
 
 console.log('-------------------------------------------');
 console.log('DEBUG: Configurações de E-mail');
@@ -12,7 +23,6 @@ console.log('SMTP_USER:', process.env.SMTP_USER || 'NÃO DEFINIDO');
 console.log('-------------------------------------------');
 
 const express = require('express');
-const fs = require('fs');
 const nodemailer = require('nodemailer');
 
 const cors = require('cors');
@@ -169,6 +179,7 @@ app.post('/auth/change-password', authenticateToken, async (req, res) => {
 app.post('/auth/forgot-password', async (req, res) => {
   const { email } = req.body;
   try {
+    await ensureSettingsTable();
     // Verifica se e-mail existe
     const [users] = await pool.query('SELECT id FROM profiles WHERE email = ?', [email]);
     if (users.length === 0) return res.status(404).json({ error: 'E-mail não encontrado' });
@@ -817,6 +828,15 @@ app.post('/subscriptions/purchase', authenticateToken, async (req, res) => {
 
 // Função para garantir que a tabela de configurações existe
 const ensureSettingsTable = async () => {
+  // Garantir que a tabela password_resets existe
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS password_resets (
+      email varchar(255) NOT NULL,
+      token varchar(255) NOT NULL,
+      expires_at datetime NOT NULL,
+      PRIMARY KEY (email)
+    )
+  `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS app_settings (
         id INT PRIMARY KEY,
@@ -867,17 +887,29 @@ app.post('/app-settings', authenticateToken, async (req, res) => {
   }
 });
 
-// Inicializa o servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\nServidor rodando em http://localhost:${PORT}`);
+// Inicializa o servidor com garantia de tabelas
+const startServer = async () => {
+  const PORT = process.env.PORT || 3000;
   
-  // Testar conexão SMTP na inicialização
-  transporter.verify((error, success) => {
-    if (error) {
-      console.log('ERRO: Configuração de e-mail (SMTP) inválida:', error.message);
-    } else {
-      console.log('SUCESSO: Servidor pronto para enviar e-mails via SMTP');
-    }
+  try {
+    await ensureSettingsTable();
+    console.log('Tabelas de sistema verificadas/criadas com sucesso.');
+  } catch (dbErr) {
+    console.error('AVISO: Falha ao verificar tabelas na inicialização:', dbErr.message);
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\nServidor rodando em http://0.0.0.0:${PORT}`);
+    
+    // Testar conexão SMTP na inicialização
+    transporter.verify((error, success) => {
+      if (error) {
+        console.log('ERRO: Configuração de e-mail (SMTP) inválida:', error.message);
+      } else {
+        console.log('SUCESSO: Servidor pronto para enviar e-mails via SMTP');
+      }
+    });
   });
-});
+};
+
+startServer();

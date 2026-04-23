@@ -1,6 +1,6 @@
 node_modules
 npm-debug.log
-.env
+# .env removido para permitir cópia no container
 .git
 .gitignore
 README.md
