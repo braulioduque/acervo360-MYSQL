@@ -650,6 +650,54 @@ app.delete('/habitualities/:id', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/habitualities/stats', authenticateToken, async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const userId = req.user.id;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ error: 'As datas de início e fim são obrigatórias.' });
+  }
+
+  try {
+    // 1. Habitualidades e disparos por arma
+    const [byFirearm] = await pool.query(`
+      SELECT 
+        f.id,
+        f.brand, 
+        f.model, 
+        f.sigma_number,
+        f.caliber,
+        COUNT(h.id) as habituality_count,
+        COALESCE(SUM(h.shot_count), 0) as total_shots
+      FROM firearms f
+      LEFT JOIN habitualities h ON f.id = h.firearm_id AND h.date_realization BETWEEN ? AND ?
+      WHERE f.owner_user_id = ?
+      GROUP BY f.id, f.brand, f.model, f.sigma_number, f.caliber
+      ORDER BY habituality_count DESC
+    `, [startDate, endDate, userId]);
+
+    // 2. Habitualidades por clube
+    const [byClub] = await pool.query(`
+      SELECT 
+        COALESCE(c.name, h.location_name, 'Local não informado') as club_name,
+        COUNT(h.id) as habituality_count
+      FROM habitualities h
+      LEFT JOIN clubs c ON h.club_id = c.id
+      WHERE h.owner_user_id = ? AND h.date_realization BETWEEN ? AND ?
+      GROUP BY club_name
+      ORDER BY habituality_count DESC
+    `, [userId, startDate, endDate]);
+
+    res.json({
+      byFirearm,
+      byClub
+    });
+  } catch (err) {
+    console.error('Erro ao buscar estatísticas:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- UPLOAD DE ARQUIVOS ---
 
 app.post('/upload/:folder', authenticateToken, (req, res) => {
@@ -761,6 +809,60 @@ app.post('/subscriptions/purchase', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('ERRO na rota de assinatura:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- ROTAS DE CONFIGURAÇÕES DO APP ---
+
+// Função para garantir que a tabela de configurações existe
+const ensureSettingsTable = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+        id INT PRIMARY KEY,
+        cr_days INT DEFAULT 90,
+        craf_days INT DEFAULT 90,
+        gte_days INT DEFAULT 45,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+};
+
+app.get('/app-settings', authenticateToken, async (req, res) => {
+  try {
+    await ensureSettingsTable();
+    const [rows] = await pool.query('SELECT * FROM app_settings WHERE id = 1');
+    if (rows.length === 0) {
+      // Retorna valores padrão caso não exista na tabela ainda
+      return res.json({ cr_days: 90, craf_days: 90, gte_days: 45 });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/app-settings', authenticateToken, async (req, res) => {
+  try {
+    await ensureSettingsTable();
+    
+    // Verifica se é admin
+    const [userRows] = await pool.query('SELECT is_admin FROM profiles WHERE id = ?', [req.user.id]);
+    if (userRows.length === 0 || userRows[0].is_admin !== 'S') {
+      return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem alterar configurações.' });
+    }
+
+    const { cr_days, craf_days, gte_days } = req.body;
+    
+    await pool.query(
+      `INSERT INTO app_settings (id, cr_days, craf_days, gte_days) 
+       VALUES (1, ?, ?, ?) 
+       ON DUPLICATE KEY UPDATE cr_days = VALUES(cr_days), craf_days = VALUES(craf_days), gte_days = VALUES(gte_days)`,
+      [cr_days, craf_days, gte_days]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

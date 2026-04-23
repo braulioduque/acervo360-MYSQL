@@ -12,6 +12,7 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import 'package:acervo360/theme/app_theme.dart';
 import 'package:acervo360/pages/dashboard_screen.dart';
+import 'package:acervo360/pages/habituality_stats_screen.dart';
 
 class HabitualitiesPage extends StatefulWidget {
   const HabitualitiesPage({super.key});
@@ -164,6 +165,17 @@ class HabitualitiesPageState extends State<HabitualitiesPage> {
         backgroundColor: colors.scaffold,
         elevation: 0,
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HabitualityStatsPage()),
+              );
+            },
+            icon: const Icon(Icons.bar_chart_rounded),
+            tooltip: 'Estatísticas',
+            color: colors.textPrimary,
+          ),
           IconButton(
             onPressed: () => openForm(),
             icon: const Icon(Icons.add_circle_outline),

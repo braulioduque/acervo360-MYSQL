@@ -153,6 +153,9 @@ class _HomeTabState extends State<_HomeTab> {
   bool _isTrial = false;
   bool _isSuperAdmin = false;
   int _daysRemaining = 0;
+  int _crThreshold = 90;
+  int _crafThreshold = 90;
+  int _gteThreshold = 45;
 
   @override
   void initState() {
@@ -175,6 +178,7 @@ class _HomeTabState extends State<_HomeTab> {
         ApiService.get('user_clubs/me'),
         ApiService.get('gtes'),
         ApiService.get('habitualities'),
+        ApiService.getAppSettings(),
       ]);
 
       if (!mounted) return;
@@ -184,6 +188,7 @@ class _HomeTabState extends State<_HomeTab> {
       final clubs = results[2] as List;
       final gtes = results[3] as List;
       final habitualities = results[4] as List;
+      final settings = results[5] as Map<String, dynamic>?;
 
       final crCategories = profile?['cr_categories'];
       String roleLabel = '';
@@ -211,19 +216,25 @@ class _HomeTabState extends State<_HomeTab> {
         _habitualitiesCount = habitualities.length;
         _avatarUrl = avatarSignedUrl;
         _isSuperAdmin = profile?['is_admin'] == 'S';
+        _crThreshold = settings?['cr_days'] ?? 90;
+        _crafThreshold = settings?['craf_days'] ?? 90;
+        _gteThreshold = settings?['gte_days'] ?? 45;
 
         final List<Map<String, dynamic>> newAlerts = [];
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
-        // PRAZO ESPECIFICO PARA NOTIFICAR CRAF E CR:
-        final upcomingLimit = today.add(const Duration(days: 90));
+        
+        // PRAZO ESPECIFICO PARA NOTIFICAR CR:
+        final crLimit = today.add(Duration(days: _crThreshold));
+        // PRAZO ESPECIFICO PARA NOTIFICAR CRAF:
+        final crafLimit = today.add(Duration(days: _crafThreshold));
 
         final crValidUntilStr = profile?['cr_valid_until']?.toString();
         if (crValidUntilStr != null && crValidUntilStr.isNotEmpty) {
           final expiry = DateTime.tryParse(crValidUntilStr);
           if (expiry != null) {
             final expiryClean = DateTime(expiry.year, expiry.month, expiry.day);
-            if (expiryClean.isBefore(upcomingLimit)) {
+            if (expiryClean.isBefore(crLimit)) {
               final isExpired = expiryClean.isBefore(today);
               final diffDays = expiryClean.difference(today).inDays.abs();
               newAlerts.add({
@@ -243,7 +254,7 @@ class _HomeTabState extends State<_HomeTab> {
             final expiry = DateTime.tryParse(validUntilStr);
             if (expiry != null) {
               final expiryClean = DateTime(expiry.year, expiry.month, expiry.day);
-              if (expiryClean.isBefore(upcomingLimit)) {
+              if (expiryClean.isBefore(crafLimit)) {
                 final isExpired = expiryClean.isBefore(today);
                 final diffDays = expiryClean.difference(today).inDays.abs();
                 final brand = f['brand'] ?? '';
@@ -267,8 +278,8 @@ class _HomeTabState extends State<_HomeTab> {
             final expiry = DateTime.tryParse(expiresAtStr);
             if (expiry != null) {
               final expiryClean = DateTime(expiry.year, expiry.month, expiry.day);
-              // Prazo específico para GTE: 45 dias
-              final gteLimit = today.add(const Duration(days: 45));
+              // Prazo específico para GTE
+              final gteLimit = today.add(Duration(days: _gteThreshold));
               
               if (expiryClean.isBefore(gteLimit)) {
                 final isExpired = expiryClean.isBefore(today);

@@ -119,10 +119,21 @@ class ApiService {
       uri = uri.replace(queryParameters: queryParams);
     }
     final response = await http.get(uri, headers: await _headers());
+    
     if (response.statusCode != 200) {
-      throw Exception('Erro na requisição GET: ${response.statusCode}');
+      try {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Erro ${response.statusCode}');
+      } catch (_) {
+        throw Exception('Erro ${response.statusCode} ao carregar dados.');
+      }
     }
-    return jsonDecode(response.body);
+    
+    try {
+      return jsonDecode(response.body);
+    } catch (e) {
+      throw Exception('Erro ao processar resposta do servidor.');
+    }
   }
 
   static Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
@@ -132,13 +143,20 @@ class ApiService {
       body: jsonEncode(data),
     );
     
-    final decoded = jsonDecode(response.body);
-    
-    if (response.statusCode >= 500) {
-      throw Exception('Erro no servidor (${response.statusCode})');
+    if (response.statusCode >= 400) {
+      try {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Erro ${response.statusCode}');
+      } catch (_) {
+        throw Exception('Erro ${response.statusCode} no servidor.');
+      }
     }
     
-    return decoded;
+    try {
+      return jsonDecode(response.body);
+    } catch (e) {
+      throw Exception('Erro ao processar resposta do servidor.');
+    }
   }
 
   static Future<void> delete(String endpoint, String id) async {
@@ -169,5 +187,22 @@ class ApiService {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http')) return path;
     return '$baseUrl/uploads/$path';
+  }
+
+  // App Settings
+  static Future<Map<String, dynamic>> getAppSettings() async {
+    return await get('app-settings');
+  }
+
+  static Future<void> updateAppSettings(Map<String, dynamic> settings) async {
+    await post('app-settings', settings);
+  }
+
+  static Future<Map<String, dynamic>> getHabitualityStats(String startDate, String endDate) async {
+    final result = await get('habitualities/stats', queryParams: {
+      'startDate': startDate,
+      'endDate': endDate,
+    });
+    return result as Map<String, dynamic>;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:acervo360/theme/app_theme.dart';
 import 'package:acervo360/pages/admin_clubs_screen.dart';
+import 'package:acervo360/pages/admin_settings_screen.dart';
 
 class AdminPage extends StatelessWidget {
   const AdminPage({super.key});
@@ -39,6 +40,18 @@ class AdminPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const AdminClubsPage()),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            _AdminGridItem(
+              title: 'Prazos de Alerta',
+              subtitle: 'Configurar tempo de antecedência para alertas de CR, CRAF e GTe.',
+              icon: Icons.timer_outlined,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminSettingsPage()),
                 );
               },
             ),

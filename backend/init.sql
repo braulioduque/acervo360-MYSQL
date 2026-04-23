@@ -199,4 +199,16 @@ CREATE TABLE IF NOT EXISTS `user_clubs` (
   CONSTRAINT `user_clubs_ibfk_2` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- 11. App Settings
+CREATE TABLE IF NOT EXISTS `app_settings` (
+  `id` int NOT NULL,
+  `cr_days` int DEFAULT '90',
+  `craf_days` int DEFAULT '90',
+  `gte_days` int DEFAULT '45',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT IGNORE INTO `app_settings` (`id`, `cr_days`, `craf_days`, `gte_days`) VALUES (1, 90, 90, 45);
+
 SET FOREIGN_KEY_CHECKS = 1;
