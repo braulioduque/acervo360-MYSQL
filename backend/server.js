@@ -269,26 +269,74 @@ app.post('/auth/reset-password', async (req, res) => {
 
 // --- ROTAS DE PERFIL ---
 
-app.delete('/auth/me', authenticateToken, async (req, res) => {
-  const userId = req.user.id;
+// Função auxiliar para deletar todos os dados e arquivos de um usuário
+const deleteUserData = async (userId) => {
   const connection = await pool.getConnection();
   try {
+    // 1. Coletar todos os caminhos de arquivos antes de deletar do banco
+    const [profiles] = await connection.query('SELECT avatar_url, cr_url FROM profiles WHERE id = ?', [userId]);
+    const [clubs] = await connection.query('SELECT logo_url FROM clubs WHERE owner_user_id = ?', [userId]);
+    const [firearms] = await connection.query('SELECT avatar_url, craf_url FROM firearms WHERE owner_user_id = ?', [userId]);
+    const [habitualities] = await connection.query('SELECT attachment_url FROM habitualities WHERE owner_user_id = ?', [userId]);
+    const [gtes] = await connection.query('SELECT gte_url FROM gtes WHERE owner_user_id = ?', [userId]);
+
     await connection.beginTransaction();
+
+    // 2. Deletar do banco de dados (na ordem correta para evitar erros de FK)
     await connection.query('DELETE FROM habitualities WHERE owner_user_id = ?', [userId]);
     await connection.query('DELETE FROM gtes WHERE owner_user_id = ?', [userId]);
     await connection.query('DELETE FROM firearms WHERE owner_user_id = ?', [userId]);
     await connection.query('DELETE FROM user_clubs WHERE user_id = ?', [userId]);
     await connection.query('DELETE FROM profile_addresses WHERE user_id = ?', [userId]);
     await connection.query('DELETE FROM user_subscriptions WHERE user_id = ?', [userId]);
-    await connection.query('DELETE FROM profiles WHERE id = ?', [userId]);
     await connection.query('DELETE FROM clubs WHERE owner_user_id = ?', [userId]);
+    await connection.query('DELETE FROM profiles WHERE id = ?', [userId]);
+
     await connection.commit();
-    res.json({ success: true });
+
+    // 3. Deletar os arquivos físicos se o commit deu certo
+    const filesToDelete = [];
+    if (profiles.length > 0) {
+      if (profiles[0].avatar_url) filesToDelete.push(profiles[0].avatar_url);
+      if (profiles[0].cr_url) filesToDelete.push(profiles[0].cr_url);
+    }
+    clubs.forEach(c => { if (c.logo_url) filesToDelete.push(c.logo_url); });
+    firearms.forEach(f => {
+      if (f.avatar_url) filesToDelete.push(f.avatar_url);
+      if (f.craf_url) filesToDelete.push(f.craf_url);
+    });
+    habitualities.forEach(h => { if (h.attachment_url) filesToDelete.push(h.attachment_url); });
+    gtes.forEach(g => { if (g.gte_url) filesToDelete.push(g.gte_url); });
+
+    filesToDelete.forEach(file => deleteFile(file));
+
+    return { success: true };
   } catch (err) {
     await connection.rollback();
-    res.status(500).json({ error: err.message });
+    throw err;
   } finally {
     connection.release();
+  }
+};
+
+app.delete('/auth/me', authenticateToken, async (req, res) => {
+  try {
+    await deleteUserData(req.user.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Erro ao excluir conta (DELETE):', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Rota redundante para compatibilidade com o frontend atual
+app.post('/auth/delete-account', authenticateToken, async (req, res) => {
+  try {
+    await deleteUserData(req.user.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Erro ao excluir conta (POST):', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -670,22 +718,40 @@ app.get('/habitualities/stats', authenticateToken, async (req, res) => {
   }
 
   try {
-    // 1. Habitualidades e disparos por arma
+    // 1. Habitualidades e disparos por arma (Próprias e de Terceiros)
     const [byFirearm] = await pool.query(`
-      SELECT 
-        f.id,
-        f.brand, 
-        f.model, 
-        f.sigma_number,
-        f.caliber,
-        COUNT(h.id) as habituality_count,
-        COALESCE(SUM(h.shot_count), 0) as total_shots
-      FROM firearms f
-      LEFT JOIN habitualities h ON f.id = h.firearm_id AND h.date_realization BETWEEN ? AND ?
-      WHERE f.owner_user_id = ?
-      GROUP BY f.id, f.brand, f.model, f.sigma_number, f.caliber
+      SELECT * FROM (
+        -- Armas próprias do usuário
+        SELECT 
+          f.id,
+          f.brand, 
+          f.model, 
+          f.sigma_number,
+          f.caliber,
+          COUNT(h.id) as habituality_count,
+          COALESCE(SUM(h.shot_count), 0) as total_shots
+        FROM firearms f
+        LEFT JOIN habitualities h ON f.id = h.firearm_id AND h.date_realization BETWEEN ? AND ?
+        WHERE f.owner_user_id = ?
+        GROUP BY f.id, f.brand, f.model, f.sigma_number, f.caliber
+
+        UNION ALL
+
+        -- Armas de terceiros registradas em habitualidades
+        SELECT 
+          CONCAT('tp_', COALESCE(h.third_party_brand, 'S/M'), '_', COALESCE(h.third_party_caliber, 'S/C')) as id,
+          COALESCE(h.third_party_brand, 'Outra') as brand,
+          COALESCE(h.third_party_species, 'Arma de Terceiro') as model,
+          'TERCEIROS' as sigma_number,
+          COALESCE(h.third_party_caliber, '-') as caliber,
+          COUNT(h.id) as habituality_count,
+          COALESCE(SUM(h.shot_count), 0) as total_shots
+        FROM habitualities h
+        WHERE h.owner_user_id = ? AND h.firearm_id IS NULL AND h.date_realization BETWEEN ? AND ?
+        GROUP BY id, brand, model, sigma_number, caliber
+      ) as combined
       ORDER BY habituality_count DESC
-    `, [startDate, endDate, userId]);
+    `, [startDate, endDate, userId, userId, startDate, endDate]);
 
     // 2. Habitualidades por clube
     const [byClub] = await pool.query(`
