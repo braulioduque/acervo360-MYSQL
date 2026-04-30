@@ -2,7 +2,6 @@ import 'package:acervo360/models/subscription_plan.dart';
 import 'package:acervo360/services/api_service.dart';
 import 'package:acervo360/services/subscription_service.dart';
 import 'package:acervo360/theme/app_theme.dart';
-import 'package:acervo360/pages/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -223,12 +222,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
                       height: 54,
                       child: FilledButton(
                         onPressed: () {
-                          // Navega para o Dashboard limpando a pilha de telas
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => const DashboardPage()),
-                            (route) => false,
-                          );
+                          // Fecha o diálogo e permanece na tela de assinatura
+                          Navigator.of(context).pop();
                         },
                         style: FilledButton.styleFrom(
                           backgroundColor: colors.accent,
@@ -259,7 +254,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    return Scaffold(
+    return PopScope(
+      canPop: !widget.showExpiredMessage,
+      child: Scaffold(
       backgroundColor: colors.scaffold,
       body: SafeArea(
         child: FadeTransition(
@@ -530,6 +527,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
             ),
           ),
         ),
+      ),
       ),
     );
   }

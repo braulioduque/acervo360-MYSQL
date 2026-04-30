@@ -30,6 +30,31 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _checkAdminStatus();
+    _checkSubscriptionGuard();
+  }
+
+  /// Verifica se a assinatura está ativa. Se expirada, redireciona para a tela de planos.
+  Future<void> _checkSubscriptionGuard() async {
+    try {
+      final userId = await ApiService.getUserId();
+      if (userId == null) return;
+
+      final isActive = await SubscriptionService.isSubscriptionActive(userId);
+      if (!mounted) return;
+
+      if (!isActive) {
+        // Redireciona para a tela de assinatura, removendo toda a pilha
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SubscriptionScreen(showExpiredMessage: true),
+          ),
+          (route) => false,
+        );
+      }
+    } catch (_) {
+      // Em caso de erro de rede, permite o acesso para não bloquear o usuário indevidamente
+    }
   }
 
   Future<void> _checkAdminStatus() async {

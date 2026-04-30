@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exclusão de Conta - Acervo 360</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --scaffold: #F8FAFC;
+            --card: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --accent: #1E56D1;
+            --delete: #EF4444;
+            --accent-soft: rgba(30, 86, 209, 0.05);
+            --delete-soft: rgba(239, 68, 68, 0.08);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--scaffold);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--delete), #b91c1c);
+            padding: 60px 40px;
+            border-radius: 24px;
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 900;
+        }
+
+        header p {
+            margin: 15px 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        section {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            display: flex;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: var(--delete);
+            border-radius: 2px;
+            margin-right: 12px;
+        }
+
+        .step-card {
+            background: var(--accent-soft);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            background: var(--accent);
+            color: white;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 900;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+        }
+
+        .warning-box {
+            background: var(--delete-soft);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .warning-box h3 {
+            color: var(--delete);
+            margin-top: 0;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--delete);
+            font-weight: bold;
+        }
+
+        .contact-action {
+            text-align: center;
+            padding: 30px;
+            background: #f1f5f9;
+            border-radius: 16px;
+        }
+
+        .email-link {
+            font-weight: 900;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 40px 20px; }
+            section { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Excluir conta e dados</h1>
+            <p>Instruções para encerramento permanente da sua conta no sistema Acervo 360.</p>
+        </header>
+
+        <section>
+            <div class="warning-box">
+                <h3>⚠️ Aviso Importante</h3>
+                <p style="color: #991b1b; font-weight: 600;">Esta ação é permanente e irreversível. Assim que a exclusão for processada, todos os seus dados serão apagados definitivamente dos nossos servidores.</p>
+            </div>
+
+            <h2>Os dados que serão removidos:</h2>
+            <ul>
+                <li>Seu perfil completo e dados cadastrais (CPF, telefone, endereço)</li>
+                <li>Sua foto de perfil e documentos de identidade</li>
+                <li>Todos os registros de armamentos e documentos associados (CRAF)</li>
+                <li>Todo o histórico de Guias de Tráfego (GTEs) e participações</li>
+                <li>Documentos e registros de Clubes de Tiro</li>
+                <li>Preferências e configurações do aplicativo</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Como excluir via Aplicativo</h2>
+            <p>A forma mais rápida de excluir sua conta é através do próprio aplicativo Acervo 360:</p>
+            
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <p>Abra o aplicativo e autentique-se com seu e-mail e senha.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <p>No menu principal ou barra inferior, acesse a opção <strong>"Conta"</strong> ou <strong>"Configurações"</strong>.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <p>Role até o final da página e localize o botão <strong>"Excluir Conta"</strong> (em destaque vermelho).</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <p>Leia atentamente o aviso de confirmação e clique em <strong>"Excluir Tudo"</strong>.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Solicitação via Suporte</h2>
+            <p>Se você não tem mais acesso ao aplicativo ou encontrou dificuldades técnicas, pode solicitar a exclusão enviando um e-mail para o nosso suporte oficial:</p>
+            
+            <div class="contact-action">
+                <p>Assunto: Solicitação de Exclusão de Conta</p>
+                <a href="mailto:suporte@inforfile.com.br" class="email-link">suporte@inforfile.com.br</a>
+                <p style="font-size: 0.85rem; margin-top: 15px; opacity: 0.7;">Observação: Para sua segurança, a solicitação deve ser feita a partir do mesmo e-mail utilizado no cadastro do app.</p>
+            </div>
+        </section>
+
+        <p style="text-align: center; font-size: 0.9rem; opacity: 0.5;">
+            Acervo 360 - Gestão Inteligente para Atiradores, Caçadores e Colecionadores.
+        </p>
+    </div>
+</body>
+</html>
